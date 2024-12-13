@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./assets/css/style.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- toggle content -->
+    <div class="container">
+      <div style="display: flex; flex-direction: column; row-gap: 2rem">
+        <button class="toggle-btn">Toggle Content 1</button>
+        <div class="toggle-content">Content 1</div>
+        <button class="toggle-btn">Toggle Content 2</button>
+        <div class="toggle-content">Content 2</div>
+      </div>
+
+      <!-- stepper -->
+      <div class="stepper" data-step="1">
+        <button class="decrement">-</button>
+        <input type="text" class="input-field" value="0" />
+        <button class="increment">+</button>
+      </div>
+      <div class="stepper" data-step="3">
+        <button class="decrement">-</button>
+        <input type="text" class="input-field" value="0" />
+        <button class="increment">+</button>
+      </div>
+
+      <!-- modal -->
+
+      <button data-modal-trigger="modal1" class="button">Open Modal 1</button>
+      <button data-modal-trigger="modal2" class="button">Open Modal 2</button>
+
+      <div id="modal1" class="modal">
+        <div class="modal-content">
+          <span class="close-button">&times;</span>
+          <p>This is the first modal</p>
+        </div>
+      </div>
+
+      <div id="modal2" class="modal">
+        <div class="modal-content">
+          <span class="close-button">&times;</span>
+          <p>This is the second modal</p>
+        </div>
+      </div>
+
+      <!-- dropdown menu -->
+      <div style="display: flex; flex-direction: column; row-gap: 2rem">
+        <div class="dropdown">
+          <button class="dropdown-trigger">Menu 1</button>
+          <div class="dropdown-menu">
+            <a href="#">Item 1</a> <a href="#">Item 2</a> <a href="#">Item 3</a>
+          </div>
+        </div>
+        <div class="dropdown">
+          <button class="dropdown-trigger">Menu 2</button>
+          <div class="dropdown-menu">
+            <a href="#">Item A</a> <a href="#">Item B</a> <a href="#">Item C</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- accordion -->
+      <div class="accordion">
+        <div class="accordion-item">
+          <div class="accordion-header">Item 1</div>
+          <div class="accordion-content"><p>Content for item 1.</p></div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">Item 2</div>
+          <div class="accordion-content"><p>Content for item 2.</p></div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">Item 3</div>
+          <div class="accordion-content"><p>Content for item 3.</p></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      class ToggleContent {
+        constructor(toggleButton, contentDiv) {
+          this.toggleButton = toggleButton;
+          this.contentDiv = contentDiv;
+          this.isVisible = true;
+          this.handlerEvents();
+        }
+
+        handlerEvents() {
+          this.toggleButton.addEventListener("click", () => this.toggle());
+        }
+
+        toggle() {
+          this.isVisible = !this.isVisible;
+          this.contentDiv.style.display = this.isVisible ? "block" : "none";
+        }
+      }
+
+      class Stepper {
+        constructor(decreaseBtn, increaseBtn, inputField, step = 1) {
+          this.decreaseBtn = decreaseBtn;
+          this.increaseBtn = increaseBtn;
+          this.inputField = inputField;
+          this.step = step;
+          this.value = parseInt(this.inputField.value) || 0;
+
+          this.handlerEvents();
+        }
+
+        handlerEvents() {
+          this.decreaseBtn.addEventListener("click", () => this.decrement());
+          this.increaseBtn.addEventListener("click", () => this.increment());
+          this.inputField.addEventListener("input", () =>
+            this.customInputValue()
+          );
+        }
+
+        decrement() {
+          this.value -= this.step;
+          this.update();
+        }
+
+        increment() {
+          this.value += this.step;
+          this.update();
+        }
+
+        update() {
+          this.inputField.value = this.value;
+        }
+
+        customInputValue() {
+          const inputValue = parseInt(this.inputField.value);
+          if (isNaN(inputValue)) {
+            return;
+          } else {
+            this.value = inputValue;
+          }
+        }
+      }
+
+      class Modal {
+        constructor(trigger, modal, closeButton) {
+          this.trigger = trigger;
+          this.modal = modal;
+          this.closeButton = closeButton;
+          this.handlerEvents();
+        }
+
+        handlerEvents() {
+          this.trigger.addEventListener("click", () => this.open());
+          this.closeButton.addEventListener("click", () => this.close());
+          this.modal.addEventListener("click", (e) => this.outsideClick(e));
+        }
+
+        open() {
+          this.modal.style.display = "block";
+        }
+
+        close() {
+          this.modal.style.display = "none";
+        }
+
+        outsideClick(e) {
+          if (e.target == this.modal) {
+            this.close();
+          }
+        }
+      }
+
+      class Dropdown {
+        constructor(trigger, menu) {
+          this.trigger = trigger;
+          this.menu = menu;
+          this.isOpen = false;
+          this.handlerEvents();
+        }
+
+        handlerEvents() {
+          this.trigger.addEventListener("click", (e) => this.toggleMenu(e));
+          document.addEventListener("click", (e) => this.outsideClick(e));
+        }
+
+        toggleMenu(e) {
+          this.isOpen = !this.isOpen;
+          this.menu.style.maxHeight = this.isOpen
+            ? `${this.menu.scrollHeight}px`
+            : "0";
+        }
+
+        outsideClick(e) {
+          if (
+            !this.trigger.contains(e.target) &&
+            !this.menu.contains(e.target)
+          ) {
+            if (this.isOpen) {
+              this.toggleMenu();
+            }
+          }
+        }
+      }
+
+      class Accordion {
+        constructor(container) {
+          this.container = container;
+          this.items = this.container.querySelectorAll(".accordion-item");
+          this.handlerEvents();
+        }
+
+        handlerEvents() {
+          this.items.forEach((item) => {
+            const header = item.querySelector(".accordion-header");
+            header.addEventListener("click", () => this.toggleContent(item));
+          });
+        }
+
+        toggleContent(item) {
+          // Xóa toàn bộ open trước
+          const isOpen = item.classList.contains("open");
+          const currentItemContent = item.querySelector(".accordion-content");
+          this.items.forEach((i) => {
+            i.classList.remove("open");
+            const content = i.querySelector(".accordion-content");
+            content.style.maxHeight = "0";
+          });
+
+          // Nếu chưa open thì open
+          if (!isOpen) {
+            item.classList.add("open");
+            currentItemContent.style.maxHeight =
+              currentItemContent.scrollHeight + "px";
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const $ = document.querySelector.bind(document);
+        const $$ = document.querySelectorAll.bind(document);
+
+        // toggle content
+        const toggles = $$(".toggle-btn");
+        const contents = $$(".toggle-content");
+        toggles.forEach((toggleButton, index) => {
+          new ToggleContent(toggleButton, contents[index]);
+        });
+
+        // stepper
+        const steppers = $$(".stepper");
+        steppers.forEach((stepper) => {
+          const decreaseBtn = stepper.querySelector(".decrement");
+          const increaseBtn = stepper.querySelector(".increment");
+          const inputField = stepper.querySelector(".input-field");
+          const step = parseInt(stepper.dataset.step) || 1;
+          new Stepper(decreaseBtn, increaseBtn, inputField, step);
+        });
+
+        // modal
+        const modals = $$(".modal");
+        modals.forEach((modal) => {
+          const trigger = $(`[data-modal-trigger="${modal.id}"]`);
+          const closeButton = modal.querySelector(".close-button");
+          new Modal(trigger, modal, closeButton);
+        });
+
+        // dropdown menu
+        const dropdowns = $$(".dropdown");
+        dropdowns.forEach((dropdown) => {
+          const trigger = dropdown.querySelector(".dropdown-trigger");
+          const menu = dropdown.querySelector(".dropdown-menu");
+          new Dropdown(trigger, menu);
+        });
+
+        // accordion
+        const accordions = $$(".accordion");
+        accordions.forEach((accordion) => {
+          new Accordion(accordion);
+        });
+      });
+    </script>
+  </body>
+</html>
